@@ -2,6 +2,7 @@ package memj
 
 import (
 	"errors"
+	"strings"
 	"sync"
 
 	"github.com/google/uuid"
@@ -107,11 +108,18 @@ func (m *MemJ) Query(collection string, query map[string]interface{}) ([]map[str
 	defer lock.RUnlock()
 
 	var result []map[string]interface{}
+	var compareValue interface{}
 
 	for _, value := range m.data[collection] {
 		isFound := false
 		for k := range query {
-			if query[k] == value[k] {
+			key := strings.Split(k, ".")
+			if len(key) == 1 {
+				compareValue = value[k]
+			} else {
+				compareValue = m.getNestedQueryValue(key, value)
+			}
+			if query[k] == compareValue {
 				isFound = true
 			} else {
 				isFound = false
@@ -125,6 +133,22 @@ func (m *MemJ) Query(collection string, query map[string]interface{}) ([]map[str
 	}
 
 	return result, nil
+}
+
+func (m *MemJ) getNestedQueryValue(nestedKeys []string, document map[string]interface{}) interface{} {
+	var currentValue interface{}
+	var documentLevel interface{} = document
+	for _, key := range nestedKeys {
+		currentDocument, ok := documentLevel.(map[string]interface{})
+		if !ok {
+			return nil
+		}
+
+		currentValue = currentDocument[key]
+		documentLevel = currentDocument[key]
+	}
+
+	return currentValue
 }
 
 func (m *MemJ) getCollectionLock(collection string) *sync.RWMutex {
