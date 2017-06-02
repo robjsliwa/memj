@@ -110,9 +110,12 @@ func (m *MemJ) Query(collection string, query map[string]interface{}) ([]map[str
 
 	for _, value := range m.data[collection] {
 		isFound := false
-		for k, v := range value {
-			if query[k] == v {
+		for k := range query {
+			if query[k] == value[k] {
 				isFound = true
+			} else {
+				isFound = false
+				break
 			}
 		}
 
