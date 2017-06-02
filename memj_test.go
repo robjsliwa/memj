@@ -187,6 +187,52 @@ func TestUpdate(t *testing.T) {
 	}
 }
 
+func TestUpdateNotFound(t *testing.T) {
+	var jsonTestPayload = []byte(`{"Name": "Platypus", "Order": "Monotremata"}`)
+
+	var payload map[string]interface{}
+	err := json.Unmarshal(jsonTestPayload, &payload)
+
+	if err != nil {
+		t.Error("Error unmarshalling: ", err)
+		return
+	}
+
+	memj, _ := New()
+	objectID, err := memj.Insert("TestCollection", payload)
+
+	if err != nil {
+		t.Error("Error inserting document: ", err)
+		return
+	}
+
+	if objectID == "" {
+		t.Error("Invalid objectID")
+		return
+	}
+
+	var updatedTestPayload = []byte(`{"Name": "Fish", "Order": "Monotremata"}`)
+	var updatedPayload map[string]interface{}
+	err = json.Unmarshal(updatedTestPayload, &updatedPayload)
+
+	if err != nil {
+		t.Error("Error unmarshalling updated payload: ", err)
+		return
+	}
+
+	isUpdated, err := memj.Update("TestCollection", objectID+"12", updatedPayload)
+
+	if err.Error() != "Not found" {
+		t.Error("Non existend object found!")
+		return
+	}
+
+	if isUpdated {
+		t.Error("Failed to update the document but reporting it as updated!")
+		return
+	}
+}
+
 func TestDelete(t *testing.T) {
 	var jsonTestPayload = []byte(`{"Name": "Platypus", "Order": "Monotremata"}`)
 
@@ -227,6 +273,50 @@ func TestDelete(t *testing.T) {
 
 	if err == nil {
 		t.Error("Error: object not deleted")
+		return
+	}
+}
+
+func TestDeleteNotFound(t *testing.T) {
+	var jsonTestPayload = []byte(`{"Name": "Platypus", "Order": "Monotremata"}`)
+
+	var payload map[string]interface{}
+	err := json.Unmarshal(jsonTestPayload, &payload)
+
+	if err != nil {
+		t.Error("Error unmarshalling: ", err)
+		return
+	}
+
+	memj, _ := New()
+	objectID, err := memj.Insert("TestCollection", payload)
+
+	if err != nil {
+		t.Error("Error inserting document: ", err)
+		return
+	}
+
+	if objectID == "" {
+		t.Error("Invalid objectID")
+		return
+	}
+
+	isDeleted, err := memj.Delete("TestCollection", objectID+"12")
+
+	if err.Error() != "Not found" {
+		t.Error("Object was found!")
+		return
+	}
+
+	if isDeleted {
+		t.Error("Not deleted object reported as deleted")
+		return
+	}
+
+	_, err = memj.Find("TestCollection", objectID)
+
+	if err != nil {
+		t.Error("Error: object was deleted")
 		return
 	}
 }
