@@ -108,31 +108,35 @@ func (m *MemJ) Query(collection string, query map[string]interface{}) ([]map[str
 	defer lock.RUnlock()
 
 	var result []map[string]interface{}
-	var compareValue interface{}
 
 	for _, value := range m.data[collection] {
-		isFound := false
-		for k := range query {
-			key := strings.Split(k, ".")
-			if len(key) == 1 {
-				compareValue = value[k]
-			} else {
-				compareValue = m.getNestedQueryValue(key, value)
-			}
-			if query[k] == compareValue {
-				isFound = true
-			} else {
-				isFound = false
-				break
-			}
-		}
-
-		if isFound {
+		if m.performMatchQuery(query, value) {
 			result = append(result, value)
 		}
 	}
 
 	return result, nil
+}
+
+func (m *MemJ) performMatchQuery(query, document map[string]interface{}) bool {
+	var compareValue interface{}
+	isFound := false
+	for k := range query {
+		key := strings.Split(k, ".")
+		if len(key) == 1 {
+			compareValue = document[k]
+		} else {
+			compareValue = m.getNestedQueryValue(key, document)
+		}
+		if query[k] == compareValue {
+			isFound = true
+		} else {
+			isFound = false
+			break
+		}
+	}
+
+	return isFound
 }
 
 func (m *MemJ) getNestedQueryValue(nestedKeys []string, document map[string]interface{}) interface{} {
