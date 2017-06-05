@@ -1285,3 +1285,207 @@ func TestLogicalQueryNotList(t *testing.T) {
 		return
 	}
 }
+
+func TestLogicalNestedAndQuery(t *testing.T) {
+	memj, _ := New()
+
+	for i := 0; i < 100; i++ {
+		payloadText := fmt.Sprintf(`{"Name": "FindMeOut%d", "Order": {"OrderID": %d, "OrderName": "NameOfOrder-%d"}}`, i, i%10, i)
+		var jsonTestPayload = []byte(payloadText)
+
+		var payload map[string]interface{}
+		err := json.Unmarshal(jsonTestPayload, &payload)
+
+		if err != nil {
+			t.Error("Error unmarshalling: ", err)
+			return
+		}
+
+		var objectID string
+		objectID, err = memj.Insert("TestCollection", payload)
+
+		if err != nil {
+			t.Error("Error inserting document: ", err)
+			return
+		}
+
+		if objectID == "" {
+			t.Error("Invalid objectID")
+			return
+		}
+	}
+
+	var jsonQuery = []byte(`{"$and": [{"Order.OrderID": 7}, {"Order.OrderName": "NameOfOrder-7"}]}`)
+	var queryPayload map[string]interface{}
+	err := json.Unmarshal(jsonQuery, &queryPayload)
+
+	if err != nil {
+		t.Error("Error unmarshalling: ", err)
+		return
+	}
+
+	documents, err := memj.Query("TestCollection", queryPayload)
+
+	if err != nil {
+		t.Error("Error in query: ", err)
+		return
+	}
+
+	if len(documents) != 1 {
+		t.Error("Incorrect number of documents returned")
+		return
+	}
+}
+
+func TestLogicalNestedOrQuery(t *testing.T) {
+	memj, _ := New()
+
+	for i := 0; i < 100; i++ {
+		payloadText := fmt.Sprintf(`{"Name": "FindMeOut%d", "Order": {"OrderID": %d, "OrderName": "NameOfOrder-%d"}}`, i, i%10, i)
+		var jsonTestPayload = []byte(payloadText)
+
+		var payload map[string]interface{}
+		err := json.Unmarshal(jsonTestPayload, &payload)
+
+		if err != nil {
+			t.Error("Error unmarshalling: ", err)
+			return
+		}
+
+		var objectID string
+		objectID, err = memj.Insert("TestCollection", payload)
+
+		if err != nil {
+			t.Error("Error inserting document: ", err)
+			return
+		}
+
+		if objectID == "" {
+			t.Error("Invalid objectID")
+			return
+		}
+	}
+
+	var jsonQuery = []byte(`{"$or": [{"Order.OrderID": 7}, {"Order.OrderName": "NameOfOrder-7"}]}`)
+	var queryPayload map[string]interface{}
+	err := json.Unmarshal(jsonQuery, &queryPayload)
+
+	if err != nil {
+		t.Error("Error unmarshalling: ", err)
+		return
+	}
+
+	documents, err := memj.Query("TestCollection", queryPayload)
+
+	if err != nil {
+		t.Error("Error in query: ", err)
+		return
+	}
+
+	if len(documents) != 10 {
+		t.Error("Incorrect number of documents returned")
+		return
+	}
+}
+
+func TestLogicalNestedOrAndQuery(t *testing.T) {
+	memj, _ := New()
+
+	for i := 0; i < 100; i++ {
+		payloadText := fmt.Sprintf(`{"Name": "FindMeOut%d", "Order": {"OrderID": %d, "OrderName": "NameOfOrder-%d"}}`, i, i%10, i)
+		var jsonTestPayload = []byte(payloadText)
+
+		var payload map[string]interface{}
+		err := json.Unmarshal(jsonTestPayload, &payload)
+
+		if err != nil {
+			t.Error("Error unmarshalling: ", err)
+			return
+		}
+
+		var objectID string
+		objectID, err = memj.Insert("TestCollection", payload)
+
+		if err != nil {
+			t.Error("Error inserting document: ", err)
+			return
+		}
+
+		if objectID == "" {
+			t.Error("Invalid objectID")
+			return
+		}
+	}
+
+	var jsonQuery = []byte(`{"$or": [{"$and": [{"Order.OrderID": 7}, {"Order.OrderName": "NameOfOrder-7"}]}, {"$and": [{"Order.OrderID": 9}, {"Order.OrderName": "NameOfOrder-9"}]}]}`)
+	var queryPayload map[string]interface{}
+	err := json.Unmarshal(jsonQuery, &queryPayload)
+
+	if err != nil {
+		t.Error("Error unmarshalling: ", err)
+		return
+	}
+
+	documents, err := memj.Query("TestCollection", queryPayload)
+
+	if err != nil {
+		t.Error("Error in query: ", err)
+		return
+	}
+
+	if len(documents) != 2 {
+		t.Error("Incorrect number of documents returned")
+		return
+	}
+}
+
+func TestLogicalInvalidNestedOrAndQuery(t *testing.T) {
+	memj, _ := New()
+
+	for i := 0; i < 100; i++ {
+		payloadText := fmt.Sprintf(`{"Name": "FindMeOut%d", "Order": {"OrderID": %d, "OrderName": "NameOfOrder-%d"}}`, i, i%10, i)
+		var jsonTestPayload = []byte(payloadText)
+
+		var payload map[string]interface{}
+		err := json.Unmarshal(jsonTestPayload, &payload)
+
+		if err != nil {
+			t.Error("Error unmarshalling: ", err)
+			return
+		}
+
+		var objectID string
+		objectID, err = memj.Insert("TestCollection", payload)
+
+		if err != nil {
+			t.Error("Error inserting document: ", err)
+			return
+		}
+
+		if objectID == "" {
+			t.Error("Invalid objectID")
+			return
+		}
+	}
+
+	var jsonQuery = []byte(`{"$or": [{"$and": [{"Order.OrderID": 7}, {"Order.OrderName": "NameOfOrder-7"}]}, {"$and": {"Order.OrderID": 9}}]}`)
+	var queryPayload map[string]interface{}
+	err := json.Unmarshal(jsonQuery, &queryPayload)
+
+	if err != nil {
+		t.Error("Error unmarshalling: ", err)
+		return
+	}
+
+	documents, err := memj.Query("TestCollection", queryPayload)
+
+	if err.Error() != "Logical operator query has invalid syntax.  Expected a list of queries." {
+		t.Error("Error should be reported about invalid query syntax")
+		return
+	}
+
+	if len(documents) != 0 {
+		t.Error("Incorrect number of documents returned")
+		return
+	}
+}

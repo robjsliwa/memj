@@ -160,10 +160,7 @@ func (m *MemJ) performLogicalOp(operator string,
 
 	var opSuccessList []bool
 	for _, query := range queryList {
-		queryMap, ok := query.(map[string]interface{})
-		if !ok {
-			return false, errors.New("Invalid query type")
-		}
+		queryMap, _ := query.(map[string]interface{})
 		isFound, err := m.performMatchQuery(queryMap, document)
 		if err != nil {
 			return false, err
