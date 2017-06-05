@@ -110,7 +110,12 @@ func (m *MemJ) Query(collection string, query map[string]interface{}) ([]map[str
 	var result []map[string]interface{}
 
 	for _, value := range m.data[collection] {
-		if m.performMatchQuery(query, value) {
+		isFound, err := m.performMatchQuery(query, value)
+		if err != nil {
+			return nil, err
+		}
+
+		if isFound {
 			result = append(result, value)
 		}
 	}
@@ -118,13 +123,23 @@ func (m *MemJ) Query(collection string, query map[string]interface{}) ([]map[str
 	return result, nil
 }
 
-func (m *MemJ) performMatchQuery(query, document map[string]interface{}) bool {
+func (m *MemJ) performMatchQuery(query, document map[string]interface{}) (bool, error) {
 	var compareValue interface{}
+	var err error
 	isFound := false
 	for k := range query {
 		key := strings.Split(k, ".")
 		if len(key) == 1 {
-			compareValue = document[k]
+			if m.isLogicalOperator(k) {
+				queryList, ok := query[k].([]interface{})
+				if !ok {
+					return false, errors.New("Logical operator query has invalid syntax.  Expected a list of queries.")
+				}
+				isFound, err = m.performLogicalOp(k, queryList, document)
+				break
+			} else {
+				compareValue = document[k]
+			}
 		} else {
 			compareValue = m.getNestedQueryValue(key, document)
 		}
@@ -136,7 +151,63 @@ func (m *MemJ) performMatchQuery(query, document map[string]interface{}) bool {
 		}
 	}
 
-	return isFound
+	return isFound, err
+}
+
+func (m *MemJ) performLogicalOp(operator string,
+	queryList []interface{},
+	document map[string]interface{}) (bool, error) {
+
+	var opSuccessList []bool
+	for _, query := range queryList {
+		queryMap, ok := query.(map[string]interface{})
+		if !ok {
+			return false, errors.New("Invalid query type")
+		}
+		isFound, err := m.performMatchQuery(queryMap, document)
+		if err != nil {
+			return false, err
+		}
+
+		opSuccessList = append(opSuccessList, isFound)
+	}
+
+	var isSuccess bool
+	switch operator {
+	case "$or":
+		isSuccess = m.any(opSuccessList)
+		break
+
+	case "$and":
+		isSuccess = m.all(opSuccessList)
+	}
+
+	return isSuccess, nil
+}
+
+func (m *MemJ) isLogicalOperator(key string) bool {
+	if key == "$or" || key == "$and" {
+		return true
+	}
+	return false
+}
+
+func (m *MemJ) all(logicList []bool) bool {
+	for _, b := range logicList {
+		if !b {
+			return false
+		}
+	}
+	return true
+}
+
+func (m *MemJ) any(logicList []bool) bool {
+	for _, b := range logicList {
+		if b {
+			return true
+		}
+	}
+	return false
 }
 
 func (m *MemJ) getNestedQueryValue(nestedKeys []string, document map[string]interface{}) interface{} {
