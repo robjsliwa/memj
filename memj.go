@@ -74,13 +74,20 @@ func (m *MemJ) Update(collection, objectID string, payload map[string]interface{
 
 	for index, value := range m.data[collection] {
 		if value["objectid"] == objectID {
-			payload["objectid"] = objectID
-			m.data[collection][index] = payload
+			m.updateFields(collection, index, payload)
 			return true, nil
 		}
 	}
 
 	return false, errors.New("Not found")
+}
+
+func (m *MemJ) updateFields(collection string, index int, payload map[string]interface{}) (bool, error) {
+	document := m.data[collection][index]
+	for k, v := range payload {
+		document[k] = v
+	}
+	return false, nil
 }
 
 // Delete - delete object in collection identified by objectID
