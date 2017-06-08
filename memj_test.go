@@ -1885,7 +1885,7 @@ func TestQueryAndUpdate(t *testing.T) {
 		return
 	}
 
-	isUpdated, err := memj.QueryAndUpdate("TestCollection", queryPayload, queryUpdatePayload, NoLimit)
+	_, isUpdated, err := memj.QueryAndUpdate("TestCollection", queryPayload, queryUpdatePayload, NoLimit)
 
 	if err != nil {
 		t.Error("Error: ", err)
@@ -1966,7 +1966,7 @@ func TestQueryAndUpdateManyDocsUpdated(t *testing.T) {
 		return
 	}
 
-	isUpdated, err := memj.QueryAndUpdate("TestCollection", queryPayload, queryUpdatePayload, NoLimit)
+	_, isUpdated, err := memj.QueryAndUpdate("TestCollection", queryPayload, queryUpdatePayload, NoLimit)
 
 	if err != nil {
 		t.Error("Error: ", err)
@@ -2047,7 +2047,7 @@ func TestQueryAndUpdateManyDocsUpdatedLimitToOne(t *testing.T) {
 		return
 	}
 
-	isUpdated, err := memj.QueryAndUpdate("TestCollection", queryPayload, queryUpdatePayload, FindOne)
+	_, isUpdated, err := memj.QueryAndUpdate("TestCollection", queryPayload, queryUpdatePayload, FindOne)
 
 	if err != nil {
 		t.Error("Error: ", err)
@@ -2128,7 +2128,7 @@ func TestQueryAndUpdateManyDocsUpdatedLimitToSix(t *testing.T) {
 		return
 	}
 
-	isUpdated, err := memj.QueryAndUpdate("TestCollection", queryPayload, queryUpdatePayload, 6)
+	_, isUpdated, err := memj.QueryAndUpdate("TestCollection", queryPayload, queryUpdatePayload, 6)
 
 	if err != nil {
 		t.Error("Error: ", err)
@@ -2209,7 +2209,7 @@ func TestQueryAndUpdateWithInvalidUpdate(t *testing.T) {
 		return
 	}
 
-	isUpdated, err := memj.QueryAndUpdate("TestCollection", queryPayload, queryUpdatePayload, NoLimit)
+	_, isUpdated, err := memj.QueryAndUpdate("TestCollection", queryPayload, queryUpdatePayload, NoLimit)
 
 	if err == nil {
 		t.Error("Invalid query syntax but no error returned")

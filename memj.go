@@ -277,16 +277,16 @@ func (m *MemJ) getCollectionLock(collection string) *sync.RWMutex {
 }
 
 // QueryAndUpdate - query and update documents selected by specified criteria
-func (m *MemJ) QueryAndUpdate(collection string, query, payload map[string]interface{}, limit int) (bool, error) {
+func (m *MemJ) QueryAndUpdate(collection string, query, payload map[string]interface{}, limit int) ([]map[string]interface{}, bool, error) {
 	maxLimit := 0
+	var results []map[string]interface{}
+	var isUpdated bool
+	var err error
 
 	lock := m.getCollectionLock(collection)
 
 	lock.RLock()
 	defer lock.RUnlock()
-
-	var isUpdated bool
-	var err error
 
 	for index, value := range m.data[collection] {
 		isFound, _ := m.performMatchQuery(query, value)
@@ -295,16 +295,17 @@ func (m *MemJ) QueryAndUpdate(collection string, query, payload map[string]inter
 			isUpdated, err = m.updateFields(collection, index, payload)
 			if err != nil {
 				// TODO: Fix partial update issue
-				return false, err
+				return results, false, err
 			}
+			results = append(results, value)
 			if limit != 0 {
 				maxLimit++
 				if maxLimit >= limit {
-					return true, nil
+					return results, true, nil
 				}
 			}
 		}
 	}
 
-	return isUpdated, nil
+	return results, isUpdated, nil
 }
