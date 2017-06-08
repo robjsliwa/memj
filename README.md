@@ -1,6 +1,6 @@
 # MemJ
 MemJ is simple non-sql like, JSON based in memory storage package.  It is meant
-primarily for unit testing code that needs to store/query JSON queries.
+primarily for unit testing code that needs to store/query JSON documents.
 
 # Queries
 Queries are in JSON in following format (based on mongodb):
@@ -21,7 +21,7 @@ You can also query fields within objects of other fields.  For example, followin
 
 Could be queried like this:
 ```
-{"Order.OrderID": 7, "": "OrderNameOfOrder-7"}
+{"Order.OrderID": 7, "Order.OrderName": "OrderNameOfOrder-7"}
 ```
 
 You can also nest queries like this:

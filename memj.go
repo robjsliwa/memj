@@ -74,8 +74,7 @@ func (m *MemJ) Update(collection, objectID string, payload map[string]interface{
 
 	for index, value := range m.data[collection] {
 		if value["objectid"] == objectID {
-			m.updateFields(collection, index, payload)
-			return true, nil
+			return m.updateFields(collection, index, payload)
 		}
 	}
 
@@ -85,9 +84,26 @@ func (m *MemJ) Update(collection, objectID string, payload map[string]interface{
 func (m *MemJ) updateFields(collection string, index int, payload map[string]interface{}) (bool, error) {
 	document := m.data[collection][index]
 	for k, v := range payload {
-		document[k] = v
+		queryParts := strings.Split(k, ".")
+		queryPartsLen := len(queryParts)
+		if queryPartsLen == 1 {
+			document[k] = v
+		} else {
+			subDocument := document
+			for index, key := range queryParts {
+				if queryPartsLen == index+1 {
+					subDocument[key] = v
+				} else {
+					var ok bool
+					subDocument, ok = subDocument[key].(map[string]interface{})
+					if !ok {
+						return false, errors.New("Invalid field path")
+					}
+				}
+			}
+		}
 	}
-	return false, nil
+	return true, nil
 }
 
 // Delete - delete object in collection identified by objectID

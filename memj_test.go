@@ -211,7 +211,7 @@ func TestUpdateWithAddingNewField(t *testing.T) {
 		return
 	}
 
-	var updatedTestPayload = []byte(`{"Name": "Fish", "Order": "Monotremata", "Price": 100}`)
+	var updatedTestPayload = []byte(`{"Name": "Fish", "Price": 100}`)
 	var updatedPayload map[string]interface{}
 	err = json.Unmarshal(updatedTestPayload, &updatedPayload)
 
@@ -261,6 +261,17 @@ func TestUpdateWithAddingNewField(t *testing.T) {
 		return
 	}
 
+	unchangedField, ok := document["Order"].(string)
+	if !ok {
+		t.Error("Incorrect type of the existing field")
+		return
+	}
+
+	if unchangedField != "Monotremata" {
+		t.Error("Incorrect value of the unchanged field")
+		return
+	}
+
 	addedField, ok := document["Price"].(float64)
 	if !ok {
 		t.Error("Incorrect type of added field")
@@ -268,6 +279,109 @@ func TestUpdateWithAddingNewField(t *testing.T) {
 	}
 
 	if addedField != 100 {
+		t.Error("Incorrect added field value")
+		return
+	}
+}
+
+func TestUpdateOfFieldInEmbeddedObject(t *testing.T) {
+	var jsonTestPayload = []byte(`{"Name": "Platypus", "Order": "Monotremata", "Info": {"Price": 150, "Description": "Cool"}}`)
+
+	var payload map[string]interface{}
+	err := json.Unmarshal(jsonTestPayload, &payload)
+
+	if err != nil {
+		t.Error("Error unmarshalling: ", err)
+		return
+	}
+
+	memj, _ := New()
+	objectID, err := memj.Insert("TestCollection", payload)
+
+	if err != nil {
+		t.Error("Error inserting document: ", err)
+		return
+	}
+
+	if objectID == "" {
+		t.Error("Invalid objectID")
+		return
+	}
+
+	var updatedTestPayload = []byte(`{"Name": "Fish", "Info.Price": 100}`)
+	var updatedPayload map[string]interface{}
+	err = json.Unmarshal(updatedTestPayload, &updatedPayload)
+
+	if err != nil {
+		t.Error("Error unmarshalling updated payload: ", err)
+		return
+	}
+
+	isUpdated, err := memj.Update("TestCollection", objectID, updatedPayload)
+
+	if err != nil {
+		t.Error("Error updating: ", err)
+		return
+	}
+
+	if !isUpdated {
+		t.Error("Failed to update the document")
+		return
+	}
+
+	document, err := memj.Find("TestCollection", objectID)
+
+	if err != nil {
+		t.Error("Error in Find: ", err)
+		return
+	}
+
+	returnedObjectID, ok := document["objectid"].(string)
+	if !ok {
+		t.Error("objectID is invalid type")
+		return
+	}
+
+	if returnedObjectID != objectID {
+		t.Error("Wrong object returned!")
+		return
+	}
+
+	updatedName, ok := document["Name"].(string)
+	if !ok {
+		t.Error("Incorrect type of the updated field")
+		return
+	}
+
+	if updatedName != "Fish" {
+		t.Error("Incorrect updated field")
+		return
+	}
+
+	unchangedField, ok := document["Order"].(string)
+	if !ok {
+		t.Error("Incorrect type of the existing field")
+		return
+	}
+
+	if unchangedField != "Monotremata" {
+		t.Error("Incorrect value of the unchanged field")
+		return
+	}
+
+	updatedEmbeddedObject, ok := document["Info"].(map[string]interface{})
+	if !ok {
+		t.Error("Incorrect type of updated embedded object")
+		return
+	}
+
+	updatedEmbeddedField, ok := updatedEmbeddedObject["Price"].(float64)
+	if !ok {
+		t.Error("Incorrent type of updated embedded field")
+		return
+	}
+
+	if updatedEmbeddedField != 100 {
 		t.Error("Incorrect added field value")
 		return
 	}
@@ -315,6 +429,52 @@ func TestUpdateNotFound(t *testing.T) {
 
 	if isUpdated {
 		t.Error("Failed to update the document but reporting it as updated!")
+		return
+	}
+}
+
+func TestUpdateOfFieldInEmbeddedObjectWithWrongPath(t *testing.T) {
+	var jsonTestPayload = []byte(`{"Name": "Platypus", "Order": "Monotremata", "Info": {"Price": 150, "Description": "Cool"}}`)
+
+	var payload map[string]interface{}
+	err := json.Unmarshal(jsonTestPayload, &payload)
+
+	if err != nil {
+		t.Error("Error unmarshalling: ", err)
+		return
+	}
+
+	memj, _ := New()
+	objectID, err := memj.Insert("TestCollection", payload)
+
+	if err != nil {
+		t.Error("Error inserting document: ", err)
+		return
+	}
+
+	if objectID == "" {
+		t.Error("Invalid objectID")
+		return
+	}
+
+	var updatedTestPayload = []byte(`{"Name": "Fish", "Info.Price.Wrong": 100}`)
+	var updatedPayload map[string]interface{}
+	err = json.Unmarshal(updatedTestPayload, &updatedPayload)
+
+	if err != nil {
+		t.Error("Error unmarshalling updated payload: ", err)
+		return
+	}
+
+	isUpdated, err := memj.Update("TestCollection", objectID, updatedPayload)
+
+	if err == nil {
+		t.Error("Wrong field path passed but no error returned")
+		return
+	}
+
+	if isUpdated {
+		t.Error("Wrong field path passed but document was updated")
 		return
 	}
 }
