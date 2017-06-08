@@ -601,7 +601,7 @@ func TestQuery(t *testing.T) {
 		return
 	}
 
-	documents, err := memj.Query("TestCollection", queryPayload)
+	documents, err := memj.Query("TestCollection", queryPayload, NoLimit)
 
 	if err != nil {
 		t.Error("Error in Find: ", err)
@@ -652,7 +652,7 @@ func TestQueryInManyDocumentsSingleCondition(t *testing.T) {
 		return
 	}
 
-	documents, err := memj.Query("TestCollection", queryPayload)
+	documents, err := memj.Query("TestCollection", queryPayload, NoLimit)
 
 	if err != nil {
 		t.Error("Error in Find: ", err)
@@ -660,6 +660,108 @@ func TestQueryInManyDocumentsSingleCondition(t *testing.T) {
 	}
 
 	if len(documents) != 1 {
+		t.Error("Incorrect number of documents returned")
+		return
+	}
+}
+
+func TestQueryInManyDocumentsReturnSingleResult(t *testing.T) {
+	memj, _ := New()
+
+	for i := 0; i < 100; i++ {
+		payloadText := fmt.Sprintf(`{"Name": "FindMeOut", "Order": "Monotremata-%d"}`, i)
+		var jsonTestPayload = []byte(payloadText)
+
+		var payload map[string]interface{}
+		err := json.Unmarshal(jsonTestPayload, &payload)
+
+		if err != nil {
+			t.Error("Error unmarshalling: ", err)
+			return
+		}
+
+		var objectID string
+		objectID, err = memj.Insert("TestCollection", payload)
+
+		if err != nil {
+			t.Error("Error inserting document: ", err)
+			return
+		}
+
+		if objectID == "" {
+			t.Error("Invalid objectID")
+			return
+		}
+	}
+
+	var jsonQuery = []byte(`{"Name": "FindMeOut"}`)
+	var queryPayload map[string]interface{}
+	err := json.Unmarshal(jsonQuery, &queryPayload)
+
+	if err != nil {
+		t.Error("Error unmarshalling: ", err)
+		return
+	}
+
+	documents, err := memj.Query("TestCollection", queryPayload, FindOne)
+
+	if err != nil {
+		t.Error("Error in Find: ", err)
+		return
+	}
+
+	if len(documents) != 1 {
+		t.Error("Incorrect number of documents returned")
+		return
+	}
+}
+
+func TestQueryInManyDocumentsReturnSevenResults(t *testing.T) {
+	memj, _ := New()
+
+	for i := 0; i < 100; i++ {
+		payloadText := fmt.Sprintf(`{"Name": "FindMeOut", "Order": "Monotremata-%d"}`, i)
+		var jsonTestPayload = []byte(payloadText)
+
+		var payload map[string]interface{}
+		err := json.Unmarshal(jsonTestPayload, &payload)
+
+		if err != nil {
+			t.Error("Error unmarshalling: ", err)
+			return
+		}
+
+		var objectID string
+		objectID, err = memj.Insert("TestCollection", payload)
+
+		if err != nil {
+			t.Error("Error inserting document: ", err)
+			return
+		}
+
+		if objectID == "" {
+			t.Error("Invalid objectID")
+			return
+		}
+	}
+
+	var jsonQuery = []byte(`{"Name": "FindMeOut"}`)
+	var queryPayload map[string]interface{}
+	err := json.Unmarshal(jsonQuery, &queryPayload)
+
+	if err != nil {
+		t.Error("Error unmarshalling: ", err)
+		return
+	}
+
+	documents, err := memj.Query("TestCollection", queryPayload, 7)
+
+	if err != nil {
+		t.Error("Error in Find: ", err)
+		return
+	}
+
+	if len(documents) != 7 {
 		t.Error("Incorrect number of documents returned")
 		return
 	}
@@ -703,7 +805,7 @@ func TestQueryInManyDocumentsWithMultipleConditions(t *testing.T) {
 		return
 	}
 
-	documents, err := memj.Query("TestCollection", queryPayload)
+	documents, err := memj.Query("TestCollection", queryPayload, NoLimit)
 
 	if err != nil {
 		t.Error("Error in Find: ", err)
@@ -754,7 +856,7 @@ func TestQueryInManyDocumentsSingleConditionNotFound(t *testing.T) {
 		return
 	}
 
-	documents, err := memj.Query("TestCollection", queryPayload)
+	documents, err := memj.Query("TestCollection", queryPayload, NoLimit)
 
 	if err != nil {
 		t.Error("Error in query: ", err)
@@ -805,7 +907,7 @@ func TestQueryInManyDocumentsWithMultipleConditionsNotFound(t *testing.T) {
 		return
 	}
 
-	documents, err := memj.Query("TestCollection", queryPayload)
+	documents, err := memj.Query("TestCollection", queryPayload, NoLimit)
 
 	if err != nil {
 		t.Error("Error in Find: ", err)
@@ -856,7 +958,7 @@ func TestQueryMissingKeyAndNotFound(t *testing.T) {
 		return
 	}
 
-	documents, err := memj.Query("TestCollection", queryPayload)
+	documents, err := memj.Query("TestCollection", queryPayload, NoLimit)
 
 	if err != nil {
 		t.Error("Error in query: ", err)
@@ -907,7 +1009,7 @@ func TestQueryMultipleConditionsMissingKeyAndNotFound(t *testing.T) {
 		return
 	}
 
-	documents, err := memj.Query("TestCollection", queryPayload)
+	documents, err := memj.Query("TestCollection", queryPayload, NoLimit)
 
 	if err != nil {
 		t.Error("Error in Find: ", err)
@@ -958,7 +1060,7 @@ func TestNestedQueryInManyDocumentsSingleCondition(t *testing.T) {
 		return
 	}
 
-	documents, err := memj.Query("TestCollection", queryPayload)
+	documents, err := memj.Query("TestCollection", queryPayload, NoLimit)
 
 	if err != nil {
 		t.Error("Error in Find: ", err)
@@ -1009,7 +1111,7 @@ func TestNestedQueryInManyDocumentsWithMultipleConditions(t *testing.T) {
 		return
 	}
 
-	documents, err := memj.Query("TestCollection", queryPayload)
+	documents, err := memj.Query("TestCollection", queryPayload, NoLimit)
 
 	if err != nil {
 		t.Error("Error in Find: ", err)
@@ -1060,7 +1162,7 @@ func TestNestedQueryInManyDocumentsWithMultipleConditionsNotFound(t *testing.T) 
 		return
 	}
 
-	documents, err := memj.Query("TestCollection", queryPayload)
+	documents, err := memj.Query("TestCollection", queryPayload, NoLimit)
 
 	if err != nil {
 		t.Error("Error in Find: ", err)
@@ -1111,7 +1213,7 @@ func TestNestedQueryInManyDocumentsWithMultipleConditionsNotExist(t *testing.T) 
 		return
 	}
 
-	documents, err := memj.Query("TestCollection", queryPayload)
+	documents, err := memj.Query("TestCollection", queryPayload, NoLimit)
 
 	if err != nil {
 		t.Error("Error in Find: ", err)
@@ -1162,7 +1264,7 @@ func TestNestedQueryInManyDocumentsWithMultipleConditionsMissingKey(t *testing.T
 		return
 	}
 
-	documents, err := memj.Query("TestCollection", queryPayload)
+	documents, err := memj.Query("TestCollection", queryPayload, NoLimit)
 
 	if err != nil {
 		t.Error("Error in Find: ", err)
@@ -1213,7 +1315,7 @@ func TestNestedQueryReturnManyDocuments(t *testing.T) {
 		return
 	}
 
-	documents, err := memj.Query("TestCollection", queryPayload)
+	documents, err := memj.Query("TestCollection", queryPayload, NoLimit)
 
 	if err != nil {
 		t.Error("Error in Find: ", err)
@@ -1264,7 +1366,7 @@ func TestOrQuery(t *testing.T) {
 		return
 	}
 
-	documents, err := memj.Query("TestCollection", queryPayload)
+	documents, err := memj.Query("TestCollection", queryPayload, NoLimit)
 
 	if err != nil {
 		t.Error("Error in Find: ", err)
@@ -1315,7 +1417,7 @@ func TestAndQuery(t *testing.T) {
 		return
 	}
 
-	documents, err := memj.Query("TestCollection", queryPayload)
+	documents, err := memj.Query("TestCollection", queryPayload, NoLimit)
 
 	if err != nil {
 		t.Error("Error in Find: ", err)
@@ -1366,7 +1468,7 @@ func TestInvalidLogicalQuery(t *testing.T) {
 		return
 	}
 
-	documents, err := memj.Query("TestCollection", queryPayload)
+	documents, err := memj.Query("TestCollection", queryPayload, NoLimit)
 
 	if err != nil {
 		t.Error("Error in Find: ", err)
@@ -1417,7 +1519,7 @@ func TestEmptyLogicalSubQuery(t *testing.T) {
 		return
 	}
 
-	documents, err := memj.Query("TestCollection", queryPayload)
+	documents, err := memj.Query("TestCollection", queryPayload, NoLimit)
 
 	if err != nil {
 		t.Error("Error in Find: ", err)
@@ -1468,7 +1570,7 @@ func TestEmptyLogicalQuery(t *testing.T) {
 		return
 	}
 
-	documents, err := memj.Query("TestCollection", queryPayload)
+	documents, err := memj.Query("TestCollection", queryPayload, NoLimit)
 
 	if err != nil {
 		t.Error("Error in Find: ", err)
@@ -1519,7 +1621,7 @@ func TestLogicalQueryNotList(t *testing.T) {
 		return
 	}
 
-	documents, err := memj.Query("TestCollection", queryPayload)
+	documents, err := memj.Query("TestCollection", queryPayload, NoLimit)
 
 	if err.Error() != "Logical operator query has invalid syntax.  Expected a list of queries." {
 		t.Error("Error should be reported about invalid query syntax")
@@ -1570,7 +1672,7 @@ func TestLogicalNestedAndQuery(t *testing.T) {
 		return
 	}
 
-	documents, err := memj.Query("TestCollection", queryPayload)
+	documents, err := memj.Query("TestCollection", queryPayload, NoLimit)
 
 	if err != nil {
 		t.Error("Error in query: ", err)
@@ -1621,7 +1723,7 @@ func TestLogicalNestedOrQuery(t *testing.T) {
 		return
 	}
 
-	documents, err := memj.Query("TestCollection", queryPayload)
+	documents, err := memj.Query("TestCollection", queryPayload, NoLimit)
 
 	if err != nil {
 		t.Error("Error in query: ", err)
@@ -1672,7 +1774,7 @@ func TestLogicalNestedOrAndQuery(t *testing.T) {
 		return
 	}
 
-	documents, err := memj.Query("TestCollection", queryPayload)
+	documents, err := memj.Query("TestCollection", queryPayload, NoLimit)
 
 	if err != nil {
 		t.Error("Error in query: ", err)
@@ -1723,7 +1825,7 @@ func TestLogicalInvalidNestedOrAndQuery(t *testing.T) {
 		return
 	}
 
-	documents, err := memj.Query("TestCollection", queryPayload)
+	documents, err := memj.Query("TestCollection", queryPayload, NoLimit)
 
 	if err.Error() != "Logical operator query has invalid syntax.  Expected a list of queries." {
 		t.Error("Error should be reported about invalid query syntax")
@@ -1732,6 +1834,390 @@ func TestLogicalInvalidNestedOrAndQuery(t *testing.T) {
 
 	if len(documents) != 0 {
 		t.Error("Incorrect number of documents returned")
+		return
+	}
+}
+
+func TestQueryAndUpdate(t *testing.T) {
+	memj, _ := New()
+
+	for i := 0; i < 100; i++ {
+		payloadText := fmt.Sprintf(`{"Name": "FindMeOut%d", "Order": "Monotremata-%d"}`, i, i)
+		var jsonTestPayload = []byte(payloadText)
+
+		var payload map[string]interface{}
+		err := json.Unmarshal(jsonTestPayload, &payload)
+
+		if err != nil {
+			t.Error("Error unmarshalling: ", err)
+			return
+		}
+
+		var objectID string
+		objectID, err = memj.Insert("TestCollection", payload)
+
+		if err != nil {
+			t.Error("Error inserting document: ", err)
+			return
+		}
+
+		if objectID == "" {
+			t.Error("Invalid objectID")
+			return
+		}
+	}
+
+	var jsonQuery = []byte(`{"Name": "FindMeOut77"}`)
+	var queryPayload map[string]interface{}
+	err := json.Unmarshal(jsonQuery, &queryPayload)
+
+	if err != nil {
+		t.Error("Error unmarshalling: ", err)
+		return
+	}
+
+	var jsonUpdate = []byte(`{"Order": "Fish-77"}`)
+	var queryUpdatePayload map[string]interface{}
+	err = json.Unmarshal(jsonUpdate, &queryUpdatePayload)
+
+	if err != nil {
+		t.Error("Error unmarshalling: ", err)
+		return
+	}
+
+	isUpdated, err := memj.QueryAndUpdate("TestCollection", queryPayload, queryUpdatePayload, NoLimit)
+
+	if err != nil {
+		t.Error("Error: ", err)
+		return
+	}
+
+	if !isUpdated {
+		t.Error("Incorrect number of documents returned")
+		return
+	}
+
+	var jsonQuery2 = []byte(`{"Order": "Fish-77"}`)
+	var queryPayload2 map[string]interface{}
+	err = json.Unmarshal(jsonQuery2, &queryPayload2)
+
+	if err != nil {
+		t.Error("Error unmarshalling: ", err)
+		return
+	}
+
+	documents, err := memj.Query("TestCollection", queryPayload2, NoLimit)
+
+	if err != nil {
+		t.Error("Error: ", err)
+		return
+	}
+
+	if len(documents) != 1 {
+		t.Error("Incorrect number of documents returned")
+		return
+	}
+}
+
+func TestQueryAndUpdateManyDocsUpdated(t *testing.T) {
+	memj, _ := New()
+
+	for i := 0; i < 100; i++ {
+		payloadText := fmt.Sprintf(`{"Name": "FindMeOut%d", "Order": "Monotremata-%d"}`, i%10, i)
+		var jsonTestPayload = []byte(payloadText)
+
+		var payload map[string]interface{}
+		err := json.Unmarshal(jsonTestPayload, &payload)
+
+		if err != nil {
+			t.Error("Error unmarshalling: ", err)
+			return
+		}
+
+		var objectID string
+		objectID, err = memj.Insert("TestCollection", payload)
+
+		if err != nil {
+			t.Error("Error inserting document: ", err)
+			return
+		}
+
+		if objectID == "" {
+			t.Error("Invalid objectID")
+			return
+		}
+	}
+
+	var jsonQuery = []byte(`{"Name": "FindMeOut7"}`)
+	var queryPayload map[string]interface{}
+	err := json.Unmarshal(jsonQuery, &queryPayload)
+
+	if err != nil {
+		t.Error("Error unmarshalling: ", err)
+		return
+	}
+
+	var jsonUpdate = []byte(`{"Order": "Fish-7"}`)
+	var queryUpdatePayload map[string]interface{}
+	err = json.Unmarshal(jsonUpdate, &queryUpdatePayload)
+
+	if err != nil {
+		t.Error("Error unmarshalling: ", err)
+		return
+	}
+
+	isUpdated, err := memj.QueryAndUpdate("TestCollection", queryPayload, queryUpdatePayload, NoLimit)
+
+	if err != nil {
+		t.Error("Error: ", err)
+		return
+	}
+
+	if !isUpdated {
+		t.Error("Incorrect number of documents returned")
+		return
+	}
+
+	var jsonQuery2 = []byte(`{"Order": "Fish-7"}`)
+	var queryPayload2 map[string]interface{}
+	err = json.Unmarshal(jsonQuery2, &queryPayload2)
+
+	if err != nil {
+		t.Error("Error unmarshalling: ", err)
+		return
+	}
+
+	documents, err := memj.Query("TestCollection", queryPayload2, NoLimit)
+
+	if err != nil {
+		t.Error("Error: ", err)
+		return
+	}
+
+	if len(documents) != 10 {
+		t.Error("Incorrect number of documents returned")
+		return
+	}
+}
+
+func TestQueryAndUpdateManyDocsUpdatedLimitToOne(t *testing.T) {
+	memj, _ := New()
+
+	for i := 0; i < 100; i++ {
+		payloadText := fmt.Sprintf(`{"Name": "FindMeOut%d", "Order": "Monotremata-%d"}`, i%10, i)
+		var jsonTestPayload = []byte(payloadText)
+
+		var payload map[string]interface{}
+		err := json.Unmarshal(jsonTestPayload, &payload)
+
+		if err != nil {
+			t.Error("Error unmarshalling: ", err)
+			return
+		}
+
+		var objectID string
+		objectID, err = memj.Insert("TestCollection", payload)
+
+		if err != nil {
+			t.Error("Error inserting document: ", err)
+			return
+		}
+
+		if objectID == "" {
+			t.Error("Invalid objectID")
+			return
+		}
+	}
+
+	var jsonQuery = []byte(`{"Name": "FindMeOut7"}`)
+	var queryPayload map[string]interface{}
+	err := json.Unmarshal(jsonQuery, &queryPayload)
+
+	if err != nil {
+		t.Error("Error unmarshalling: ", err)
+		return
+	}
+
+	var jsonUpdate = []byte(`{"Order": "Fish-7"}`)
+	var queryUpdatePayload map[string]interface{}
+	err = json.Unmarshal(jsonUpdate, &queryUpdatePayload)
+
+	if err != nil {
+		t.Error("Error unmarshalling: ", err)
+		return
+	}
+
+	isUpdated, err := memj.QueryAndUpdate("TestCollection", queryPayload, queryUpdatePayload, FindOne)
+
+	if err != nil {
+		t.Error("Error: ", err)
+		return
+	}
+
+	if !isUpdated {
+		t.Error("Incorrect number of documents returned")
+		return
+	}
+
+	var jsonQuery2 = []byte(`{"Order": "Fish-7"}`)
+	var queryPayload2 map[string]interface{}
+	err = json.Unmarshal(jsonQuery2, &queryPayload2)
+
+	if err != nil {
+		t.Error("Error unmarshalling: ", err)
+		return
+	}
+
+	documents, err := memj.Query("TestCollection", queryPayload2, NoLimit)
+
+	if err != nil {
+		t.Error("Error: ", err)
+		return
+	}
+
+	if len(documents) != 1 {
+		t.Error("Incorrect number of documents returned")
+		return
+	}
+}
+
+func TestQueryAndUpdateManyDocsUpdatedLimitToSix(t *testing.T) {
+	memj, _ := New()
+
+	for i := 0; i < 100; i++ {
+		payloadText := fmt.Sprintf(`{"Name": "FindMeOut%d", "Order": "Monotremata-%d"}`, i%10, i)
+		var jsonTestPayload = []byte(payloadText)
+
+		var payload map[string]interface{}
+		err := json.Unmarshal(jsonTestPayload, &payload)
+
+		if err != nil {
+			t.Error("Error unmarshalling: ", err)
+			return
+		}
+
+		var objectID string
+		objectID, err = memj.Insert("TestCollection", payload)
+
+		if err != nil {
+			t.Error("Error inserting document: ", err)
+			return
+		}
+
+		if objectID == "" {
+			t.Error("Invalid objectID")
+			return
+		}
+	}
+
+	var jsonQuery = []byte(`{"Name": "FindMeOut7"}`)
+	var queryPayload map[string]interface{}
+	err := json.Unmarshal(jsonQuery, &queryPayload)
+
+	if err != nil {
+		t.Error("Error unmarshalling: ", err)
+		return
+	}
+
+	var jsonUpdate = []byte(`{"Order": "Fish-7"}`)
+	var queryUpdatePayload map[string]interface{}
+	err = json.Unmarshal(jsonUpdate, &queryUpdatePayload)
+
+	if err != nil {
+		t.Error("Error unmarshalling: ", err)
+		return
+	}
+
+	isUpdated, err := memj.QueryAndUpdate("TestCollection", queryPayload, queryUpdatePayload, 6)
+
+	if err != nil {
+		t.Error("Error: ", err)
+		return
+	}
+
+	if !isUpdated {
+		t.Error("Incorrect number of documents returned")
+		return
+	}
+
+	var jsonQuery2 = []byte(`{"Order": "Fish-7"}`)
+	var queryPayload2 map[string]interface{}
+	err = json.Unmarshal(jsonQuery2, &queryPayload2)
+
+	if err != nil {
+		t.Error("Error unmarshalling: ", err)
+		return
+	}
+
+	documents, err := memj.Query("TestCollection", queryPayload2, NoLimit)
+
+	if err != nil {
+		t.Error("Error: ", err)
+		return
+	}
+
+	if len(documents) != 6 {
+		t.Error("Incorrect number of documents returned")
+		return
+	}
+}
+
+func TestQueryAndUpdateWithInvalidUpdate(t *testing.T) {
+	memj, _ := New()
+
+	for i := 0; i < 100; i++ {
+		payloadText := fmt.Sprintf(`{"Name": "FindMeOut%d", "Order": "Monotremata-%d"}`, i, i)
+		var jsonTestPayload = []byte(payloadText)
+
+		var payload map[string]interface{}
+		err := json.Unmarshal(jsonTestPayload, &payload)
+
+		if err != nil {
+			t.Error("Error unmarshalling: ", err)
+			return
+		}
+
+		var objectID string
+		objectID, err = memj.Insert("TestCollection", payload)
+
+		if err != nil {
+			t.Error("Error inserting document: ", err)
+			return
+		}
+
+		if objectID == "" {
+			t.Error("Invalid objectID")
+			return
+		}
+	}
+
+	var jsonQuery = []byte(`{"Name": "FindMeOut7"}`)
+	var queryPayload map[string]interface{}
+	err := json.Unmarshal(jsonQuery, &queryPayload)
+
+	if err != nil {
+		t.Error("Error unmarshalling: ", err)
+		return
+	}
+
+	var jsonUpdate = []byte(`{"bore.oir": []}`)
+	var queryUpdatePayload map[string]interface{}
+	err = json.Unmarshal(jsonUpdate, &queryUpdatePayload)
+
+	if err != nil {
+		t.Error("Error unmarshalling: ", err)
+		return
+	}
+
+	isUpdated, err := memj.QueryAndUpdate("TestCollection", queryPayload, queryUpdatePayload, NoLimit)
+
+	if err == nil {
+		t.Error("Invalid query syntax but no error returned")
+		return
+	}
+
+	if isUpdated {
+		t.Error("Update done even though query syntax was wrong")
 		return
 	}
 }

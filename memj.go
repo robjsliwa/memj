@@ -8,6 +8,12 @@ import (
 	"github.com/google/uuid"
 )
 
+// Limit constants
+const (
+	NoLimit = iota
+	FindOne
+)
+
 // MemJ - memory json
 type MemJ struct {
 	mutexLock       sync.RWMutex
@@ -124,7 +130,9 @@ func (m *MemJ) Delete(collection, objectID string) (bool, error) {
 }
 
 // Query - query for object in collection
-func (m *MemJ) Query(collection string, query map[string]interface{}) ([]map[string]interface{}, error) {
+func (m *MemJ) Query(collection string, query map[string]interface{}, limit int) ([]map[string]interface{}, error) {
+	maxLimit := 0
+
 	lock := m.getCollectionLock(collection)
 
 	lock.RLock()
@@ -140,6 +148,12 @@ func (m *MemJ) Query(collection string, query map[string]interface{}) ([]map[str
 
 		if isFound {
 			result = append(result, value)
+			if limit != 0 {
+				maxLimit++
+				if maxLimit >= limit {
+					return result, nil
+				}
+			}
 		}
 	}
 
@@ -260,4 +274,37 @@ func (m *MemJ) getCollectionLock(collection string) *sync.RWMutex {
 	}
 
 	return cl
+}
+
+// QueryAndUpdate - query and update documents selected by specified criteria
+func (m *MemJ) QueryAndUpdate(collection string, query, payload map[string]interface{}, limit int) (bool, error) {
+	maxLimit := 0
+
+	lock := m.getCollectionLock(collection)
+
+	lock.RLock()
+	defer lock.RUnlock()
+
+	var isUpdated bool
+	var err error
+
+	for index, value := range m.data[collection] {
+		isFound, _ := m.performMatchQuery(query, value)
+
+		if isFound {
+			isUpdated, err = m.updateFields(collection, index, payload)
+			if err != nil {
+				// TODO: Fix partial update issue
+				return false, err
+			}
+			if limit != 0 {
+				maxLimit++
+				if maxLimit >= limit {
+					return true, nil
+				}
+			}
+		}
+	}
+
+	return isUpdated, nil
 }
