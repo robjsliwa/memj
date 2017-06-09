@@ -2,6 +2,7 @@ package memj
 
 import (
 	"errors"
+	"reflect"
 	"strings"
 	"sync"
 
@@ -12,6 +13,24 @@ import (
 const (
 	NoLimit = iota
 	FindOne
+)
+
+// Comparison operator constants
+const (
+	EQ  = "$eq"
+	GT  = "$gt"
+	GTE = "$gte"
+	LT  = "$lt"
+	LTE = "$lte"
+	NE  = "$ne"
+	IN  = "$in"
+	NIN = "$nin"
+)
+
+// Logical operator constants
+const (
+	AND = "$and"
+	OR  = "$or"
 )
 
 // MemJ - memory json
@@ -175,7 +194,23 @@ func (m *MemJ) performMatchQuery(query, document map[string]interface{}) (bool, 
 				isFound, err = m.performLogicalOp(k, queryList, document)
 				break
 			} else {
-				compareValue = document[k]
+				var opType string
+				var compareToValue interface{}
+				var isComparison bool
+				opType, compareToValue, isComparison, err = m.isComparisonOperator(query[k])
+				if err != nil {
+					return false, err
+				}
+				if isComparison {
+					docValue := document[k]
+					isFound, err = m.performComperisonOp(opType, docValue, compareToValue)
+					if err != nil {
+						return false, err
+					}
+					break
+				} else {
+					compareValue = document[k]
+				}
 			}
 		} else {
 			compareValue = m.getNestedQueryValue(key, document)
@@ -189,6 +224,76 @@ func (m *MemJ) performMatchQuery(query, document map[string]interface{}) (bool, 
 	}
 
 	return isFound, err
+}
+
+func (m *MemJ) performComperisonOp(op string, compVal1, compVal2 interface{}) (bool, error) {
+	if reflect.TypeOf(compVal1) != reflect.TypeOf(compVal2) {
+		return false, errors.New("Cannot compare values of different types")
+	}
+
+	switch compVal1.(type) {
+	case string:
+		compVal1Str, _ := compVal1.(string)
+		compVal2Str, _ := compVal2.(string)
+		isFound := m.compareStrings(op, compVal1Str, compVal2Str)
+		return isFound, nil
+
+	case float64:
+		compVal1Float, _ := compVal1.(float64)
+		compVal2Float, _ := compVal2.(float64)
+		isFound := m.compareFloats(op, compVal1Float, compVal2Float)
+		return isFound, nil
+	}
+
+	return false, nil
+}
+
+func (m *MemJ) compareFloats(op string, compVal1, compVal2 float64) bool {
+	switch op {
+	case GT:
+		return compVal1 > compVal2
+
+	case GTE:
+		return compVal1 >= compVal2
+
+	case LT:
+		return compVal1 < compVal2
+
+	case LTE:
+		return compVal1 <= compVal2
+
+	case NE:
+		return compVal1 != compVal2
+
+	case EQ:
+		return compVal1 == compVal2
+	}
+
+	return false
+}
+
+func (m *MemJ) compareStrings(op, compVal1, compVal2 string) bool {
+	switch op {
+	case GT:
+		return compVal1 > compVal2
+
+	case GTE:
+		return compVal1 >= compVal2
+
+	case LT:
+		return compVal1 < compVal2
+
+	case LTE:
+		return compVal1 <= compVal2
+
+	case NE:
+		return compVal1 != compVal2
+
+	case EQ:
+		return compVal1 == compVal2
+	}
+
+	return false
 }
 
 func (m *MemJ) performLogicalOp(operator string,
@@ -208,19 +313,49 @@ func (m *MemJ) performLogicalOp(operator string,
 
 	var isSuccess bool
 	switch operator {
-	case "$or":
+	case OR:
 		isSuccess = m.any(opSuccessList)
 		break
 
-	case "$and":
+	case AND:
 		isSuccess = m.all(opSuccessList)
 	}
 
 	return isSuccess, nil
 }
 
+func (m *MemJ) isComparisonOperator(op interface{}) (string, interface{}, bool, error) {
+	opType, ok := op.(map[string]interface{})
+	if !ok {
+		return "", nil, false, nil
+	}
+
+	if len(opType) == 0 || len(opType) > 1 {
+		return "", nil, false, nil
+	}
+
+	for k, v := range opType {
+		switch k {
+		case EQ, GT, GTE, LT, LTE, NE:
+			switch v := v.(type) {
+			case float64, string:
+				return k, v, true, nil
+
+			default:
+				return "", nil, false, errors.New("Invalid type for comparison")
+			}
+
+			// TODO : this is not implemented yet
+			/*case IN, NIN:
+			  return k, v, true, nil*/
+		}
+	}
+
+	return "", nil, false, nil
+}
+
 func (m *MemJ) isLogicalOperator(key string) bool {
-	if key == "$or" || key == "$and" {
+	if key == OR || key == AND {
 		return true
 	}
 	return false

@@ -2221,3 +2221,771 @@ func TestQueryAndUpdateWithInvalidUpdate(t *testing.T) {
 		return
 	}
 }
+
+// Comparison operators - float64
+func TestComparisonGT(t *testing.T) {
+	memj, _ := New()
+
+	for i := 0; i < 100; i++ {
+		payloadText := fmt.Sprintf(`{"OrderID": "id-%d", "OrderPrice": %d}`, i, i)
+		var jsonTestPayload = []byte(payloadText)
+
+		var payload map[string]interface{}
+		err := json.Unmarshal(jsonTestPayload, &payload)
+
+		if err != nil {
+			t.Error("Error unmarshalling: ", err)
+			return
+		}
+
+		var objectID string
+		objectID, err = memj.Insert("TestCollection", payload)
+
+		if err != nil {
+			t.Error("Error inserting document: ", err)
+			return
+		}
+
+		if objectID == "" {
+			t.Error("Invalid objectID")
+			return
+		}
+	}
+
+	var jsonQuery = []byte(`{"OrderPrice": {"$gt": 50}}`)
+	var queryPayload map[string]interface{}
+	err := json.Unmarshal(jsonQuery, &queryPayload)
+
+	if err != nil {
+		t.Error("Error unmarshalling: ", err)
+		return
+	}
+
+	documents, err := memj.Query("TestCollection", queryPayload, NoLimit)
+
+	if err != nil {
+		t.Error("Error in Find: ", err)
+		return
+	}
+
+	if len(documents) != 49 {
+		t.Error("Incorrect number of documents returned")
+		return
+	}
+}
+
+func TestComparisonGTE(t *testing.T) {
+	memj, _ := New()
+
+	for i := 0; i < 100; i++ {
+		payloadText := fmt.Sprintf(`{"OrderID": "id-%d", "OrderPrice": %d}`, i, i)
+		var jsonTestPayload = []byte(payloadText)
+
+		var payload map[string]interface{}
+		err := json.Unmarshal(jsonTestPayload, &payload)
+
+		if err != nil {
+			t.Error("Error unmarshalling: ", err)
+			return
+		}
+
+		var objectID string
+		objectID, err = memj.Insert("TestCollection", payload)
+
+		if err != nil {
+			t.Error("Error inserting document: ", err)
+			return
+		}
+
+		if objectID == "" {
+			t.Error("Invalid objectID")
+			return
+		}
+	}
+
+	var jsonQuery = []byte(`{"OrderPrice": {"$gte": 50}}`)
+	var queryPayload map[string]interface{}
+	err := json.Unmarshal(jsonQuery, &queryPayload)
+
+	if err != nil {
+		t.Error("Error unmarshalling: ", err)
+		return
+	}
+
+	documents, err := memj.Query("TestCollection", queryPayload, NoLimit)
+
+	if err != nil {
+		t.Error("Error in Find: ", err)
+		return
+	}
+
+	if len(documents) != 50 {
+		t.Error("Incorrect number of documents returned")
+		return
+	}
+}
+
+func TestComparisonLT(t *testing.T) {
+	memj, _ := New()
+
+	for i := 0; i < 100; i++ {
+		payloadText := fmt.Sprintf(`{"OrderID": "id-%d", "OrderPrice": %d}`, i, i)
+		var jsonTestPayload = []byte(payloadText)
+
+		var payload map[string]interface{}
+		err := json.Unmarshal(jsonTestPayload, &payload)
+
+		if err != nil {
+			t.Error("Error unmarshalling: ", err)
+			return
+		}
+
+		var objectID string
+		objectID, err = memj.Insert("TestCollection", payload)
+
+		if err != nil {
+			t.Error("Error inserting document: ", err)
+			return
+		}
+
+		if objectID == "" {
+			t.Error("Invalid objectID")
+			return
+		}
+	}
+
+	var jsonQuery = []byte(`{"OrderPrice": {"$lt": 50}}`)
+	var queryPayload map[string]interface{}
+	err := json.Unmarshal(jsonQuery, &queryPayload)
+
+	if err != nil {
+		t.Error("Error unmarshalling: ", err)
+		return
+	}
+
+	documents, err := memj.Query("TestCollection", queryPayload, NoLimit)
+
+	if err != nil {
+		t.Error("Error in Find: ", err)
+		return
+	}
+
+	if len(documents) != 50 {
+		t.Error("Incorrect number of documents returned")
+		return
+	}
+}
+
+func TestComparisonLTE(t *testing.T) {
+	memj, _ := New()
+
+	for i := 0; i < 100; i++ {
+		payloadText := fmt.Sprintf(`{"OrderID": "id-%d", "OrderPrice": %d}`, i, i)
+		var jsonTestPayload = []byte(payloadText)
+
+		var payload map[string]interface{}
+		err := json.Unmarshal(jsonTestPayload, &payload)
+
+		if err != nil {
+			t.Error("Error unmarshalling: ", err)
+			return
+		}
+
+		var objectID string
+		objectID, err = memj.Insert("TestCollection", payload)
+
+		if err != nil {
+			t.Error("Error inserting document: ", err)
+			return
+		}
+
+		if objectID == "" {
+			t.Error("Invalid objectID")
+			return
+		}
+	}
+
+	var jsonQuery = []byte(`{"OrderPrice": {"$lte": 50}}`)
+	var queryPayload map[string]interface{}
+	err := json.Unmarshal(jsonQuery, &queryPayload)
+
+	if err != nil {
+		t.Error("Error unmarshalling: ", err)
+		return
+	}
+
+	documents, err := memj.Query("TestCollection", queryPayload, NoLimit)
+
+	if err != nil {
+		t.Error("Error in Find: ", err)
+		return
+	}
+
+	if len(documents) != 51 {
+		t.Error("Incorrect number of documents returned")
+		return
+	}
+}
+
+func TestComparisonEQ(t *testing.T) {
+	memj, _ := New()
+
+	for i := 0; i < 100; i++ {
+		payloadText := fmt.Sprintf(`{"OrderID": "id-%d", "OrderPrice": %d}`, i, i)
+		var jsonTestPayload = []byte(payloadText)
+
+		var payload map[string]interface{}
+		err := json.Unmarshal(jsonTestPayload, &payload)
+
+		if err != nil {
+			t.Error("Error unmarshalling: ", err)
+			return
+		}
+
+		var objectID string
+		objectID, err = memj.Insert("TestCollection", payload)
+
+		if err != nil {
+			t.Error("Error inserting document: ", err)
+			return
+		}
+
+		if objectID == "" {
+			t.Error("Invalid objectID")
+			return
+		}
+	}
+
+	var jsonQuery = []byte(`{"OrderPrice": {"$eq": 50}}`)
+	var queryPayload map[string]interface{}
+	err := json.Unmarshal(jsonQuery, &queryPayload)
+
+	if err != nil {
+		t.Error("Error unmarshalling: ", err)
+		return
+	}
+
+	documents, err := memj.Query("TestCollection", queryPayload, NoLimit)
+
+	if err != nil {
+		t.Error("Error in Find: ", err)
+		return
+	}
+
+	if len(documents) != 1 {
+		t.Error("Incorrect number of documents returned")
+		return
+	}
+}
+
+func TestComparisonNE(t *testing.T) {
+	memj, _ := New()
+
+	for i := 0; i < 100; i++ {
+		payloadText := fmt.Sprintf(`{"OrderID": "id-%d", "OrderPrice": %d}`, i, i)
+		var jsonTestPayload = []byte(payloadText)
+
+		var payload map[string]interface{}
+		err := json.Unmarshal(jsonTestPayload, &payload)
+
+		if err != nil {
+			t.Error("Error unmarshalling: ", err)
+			return
+		}
+
+		var objectID string
+		objectID, err = memj.Insert("TestCollection", payload)
+
+		if err != nil {
+			t.Error("Error inserting document: ", err)
+			return
+		}
+
+		if objectID == "" {
+			t.Error("Invalid objectID")
+			return
+		}
+	}
+
+	var jsonQuery = []byte(`{"OrderPrice": {"$ne": 50}}`)
+	var queryPayload map[string]interface{}
+	err := json.Unmarshal(jsonQuery, &queryPayload)
+
+	if err != nil {
+		t.Error("Error unmarshalling: ", err)
+		return
+	}
+
+	documents, err := memj.Query("TestCollection", queryPayload, NoLimit)
+
+	if err != nil {
+		t.Error("Error in Find: ", err)
+		return
+	}
+
+	if len(documents) != 99 {
+		t.Error("Incorrect number of documents returned")
+		return
+	}
+}
+
+// Comparison operators - strings
+func TestComparisonGTStr(t *testing.T) {
+	memj, _ := New()
+
+	for i := 0; i < 100; i++ {
+		payloadText := fmt.Sprintf(`{"OrderID": "id-%d", "OrderPrice": "%d"}`, i, i)
+		var jsonTestPayload = []byte(payloadText)
+
+		var payload map[string]interface{}
+		err := json.Unmarshal(jsonTestPayload, &payload)
+
+		if err != nil {
+			t.Error("Error unmarshalling: ", err)
+			return
+		}
+
+		var objectID string
+		objectID, err = memj.Insert("TestCollection", payload)
+
+		if err != nil {
+			t.Error("Error inserting document: ", err)
+			return
+		}
+
+		if objectID == "" {
+			t.Error("Invalid objectID")
+			return
+		}
+	}
+
+	var jsonQuery = []byte(`{"OrderPrice": {"$gt": "50"}}`)
+	var queryPayload map[string]interface{}
+	err := json.Unmarshal(jsonQuery, &queryPayload)
+
+	if err != nil {
+		t.Error("Error unmarshalling: ", err)
+		return
+	}
+
+	documents, err := memj.Query("TestCollection", queryPayload, NoLimit)
+
+	if err != nil {
+		t.Error("Error in Find: ", err)
+		return
+	}
+
+	if len(documents) != 53 {
+		t.Error("Incorrect number of documents returned")
+		return
+	}
+}
+
+func TestComparisonGTEStr(t *testing.T) {
+	memj, _ := New()
+
+	for i := 0; i < 100; i++ {
+		payloadText := fmt.Sprintf(`{"OrderID": "id-%d", "OrderPrice": "%d"}`, i, i)
+		var jsonTestPayload = []byte(payloadText)
+
+		var payload map[string]interface{}
+		err := json.Unmarshal(jsonTestPayload, &payload)
+
+		if err != nil {
+			t.Error("Error unmarshalling: ", err)
+			return
+		}
+
+		var objectID string
+		objectID, err = memj.Insert("TestCollection", payload)
+
+		if err != nil {
+			t.Error("Error inserting document: ", err)
+			return
+		}
+
+		if objectID == "" {
+			t.Error("Invalid objectID")
+			return
+		}
+	}
+
+	var jsonQuery = []byte(`{"OrderPrice": {"$gte": "50"}}`)
+	var queryPayload map[string]interface{}
+	err := json.Unmarshal(jsonQuery, &queryPayload)
+
+	if err != nil {
+		t.Error("Error unmarshalling: ", err)
+		return
+	}
+
+	documents, err := memj.Query("TestCollection", queryPayload, NoLimit)
+
+	if err != nil {
+		t.Error("Error in Find: ", err)
+		return
+	}
+
+	if len(documents) != 54 {
+		t.Error("Incorrect number of documents returned")
+		return
+	}
+}
+
+func TestComparisonLTStr(t *testing.T) {
+	memj, _ := New()
+
+	for i := 0; i < 100; i++ {
+		payloadText := fmt.Sprintf(`{"OrderID": "id-%d", "OrderPrice": "%d"}`, i, i)
+		var jsonTestPayload = []byte(payloadText)
+
+		var payload map[string]interface{}
+		err := json.Unmarshal(jsonTestPayload, &payload)
+
+		if err != nil {
+			t.Error("Error unmarshalling: ", err)
+			return
+		}
+
+		var objectID string
+		objectID, err = memj.Insert("TestCollection", payload)
+
+		if err != nil {
+			t.Error("Error inserting document: ", err)
+			return
+		}
+
+		if objectID == "" {
+			t.Error("Invalid objectID")
+			return
+		}
+	}
+
+	var jsonQuery = []byte(`{"OrderPrice": {"$lt": "50"}}`)
+	var queryPayload map[string]interface{}
+	err := json.Unmarshal(jsonQuery, &queryPayload)
+
+	if err != nil {
+		t.Error("Error unmarshalling: ", err)
+		return
+	}
+
+	documents, err := memj.Query("TestCollection", queryPayload, NoLimit)
+
+	if err != nil {
+		t.Error("Error in Find: ", err)
+		return
+	}
+
+	if len(documents) != 46 {
+		t.Error("Incorrect number of documents returned")
+		return
+	}
+}
+
+func TestComparisonLTEStr(t *testing.T) {
+	memj, _ := New()
+
+	for i := 0; i < 100; i++ {
+		payloadText := fmt.Sprintf(`{"OrderID": "id-%d", "OrderPrice": "%d"}`, i, i)
+		var jsonTestPayload = []byte(payloadText)
+
+		var payload map[string]interface{}
+		err := json.Unmarshal(jsonTestPayload, &payload)
+
+		if err != nil {
+			t.Error("Error unmarshalling: ", err)
+			return
+		}
+
+		var objectID string
+		objectID, err = memj.Insert("TestCollection", payload)
+
+		if err != nil {
+			t.Error("Error inserting document: ", err)
+			return
+		}
+
+		if objectID == "" {
+			t.Error("Invalid objectID")
+			return
+		}
+	}
+
+	var jsonQuery = []byte(`{"OrderPrice": {"$lte": "50"}}`)
+	var queryPayload map[string]interface{}
+	err := json.Unmarshal(jsonQuery, &queryPayload)
+
+	if err != nil {
+		t.Error("Error unmarshalling: ", err)
+		return
+	}
+
+	documents, err := memj.Query("TestCollection", queryPayload, NoLimit)
+
+	if err != nil {
+		t.Error("Error in Find: ", err)
+		return
+	}
+
+	if len(documents) != 47 {
+		t.Error("Incorrect number of documents returned")
+		return
+	}
+}
+
+func TestComparisonEQStr(t *testing.T) {
+	memj, _ := New()
+
+	for i := 0; i < 100; i++ {
+		payloadText := fmt.Sprintf(`{"OrderID": "id-%d", "OrderPrice": "%d"}`, i, i)
+		var jsonTestPayload = []byte(payloadText)
+
+		var payload map[string]interface{}
+		err := json.Unmarshal(jsonTestPayload, &payload)
+
+		if err != nil {
+			t.Error("Error unmarshalling: ", err)
+			return
+		}
+
+		var objectID string
+		objectID, err = memj.Insert("TestCollection", payload)
+
+		if err != nil {
+			t.Error("Error inserting document: ", err)
+			return
+		}
+
+		if objectID == "" {
+			t.Error("Invalid objectID")
+			return
+		}
+	}
+
+	var jsonQuery = []byte(`{"OrderPrice": {"$eq": "50"}}`)
+	var queryPayload map[string]interface{}
+	err := json.Unmarshal(jsonQuery, &queryPayload)
+
+	if err != nil {
+		t.Error("Error unmarshalling: ", err)
+		return
+	}
+
+	documents, err := memj.Query("TestCollection", queryPayload, NoLimit)
+
+	if err != nil {
+		t.Error("Error in Find: ", err)
+		return
+	}
+
+	if len(documents) != 1 {
+		t.Error("Incorrect number of documents returned")
+		return
+	}
+}
+
+func TestComparisonNEStr(t *testing.T) {
+	memj, _ := New()
+
+	for i := 0; i < 100; i++ {
+		payloadText := fmt.Sprintf(`{"OrderID": "id-%d", "OrderPrice": "%d"}`, i, i)
+		var jsonTestPayload = []byte(payloadText)
+
+		var payload map[string]interface{}
+		err := json.Unmarshal(jsonTestPayload, &payload)
+
+		if err != nil {
+			t.Error("Error unmarshalling: ", err)
+			return
+		}
+
+		var objectID string
+		objectID, err = memj.Insert("TestCollection", payload)
+
+		if err != nil {
+			t.Error("Error inserting document: ", err)
+			return
+		}
+
+		if objectID == "" {
+			t.Error("Invalid objectID")
+			return
+		}
+	}
+
+	var jsonQuery = []byte(`{"OrderPrice": {"$ne": "50"}}`)
+	var queryPayload map[string]interface{}
+	err := json.Unmarshal(jsonQuery, &queryPayload)
+
+	if err != nil {
+		t.Error("Error unmarshalling: ", err)
+		return
+	}
+
+	documents, err := memj.Query("TestCollection", queryPayload, NoLimit)
+
+	if err != nil {
+		t.Error("Error in Find: ", err)
+		return
+	}
+
+	if len(documents) != 99 {
+		t.Error("Incorrect number of documents returned")
+		return
+	}
+}
+
+// Invalid comparisons
+func TestComparisonInvalidType(t *testing.T) {
+	memj, _ := New()
+
+	for i := 0; i < 100; i++ {
+		payloadText := fmt.Sprintf(`{"OrderID": "id-%d", "OrderPrice": %d}`, i, i)
+		var jsonTestPayload = []byte(payloadText)
+
+		var payload map[string]interface{}
+		err := json.Unmarshal(jsonTestPayload, &payload)
+
+		if err != nil {
+			t.Error("Error unmarshalling: ", err)
+			return
+		}
+
+		var objectID string
+		objectID, err = memj.Insert("TestCollection", payload)
+
+		if err != nil {
+			t.Error("Error inserting document: ", err)
+			return
+		}
+
+		if objectID == "" {
+			t.Error("Invalid objectID")
+			return
+		}
+	}
+
+	var jsonQuery = []byte(`{"OrderPrice": {"$gt": "50"}}`)
+	var queryPayload map[string]interface{}
+	err := json.Unmarshal(jsonQuery, &queryPayload)
+
+	if err != nil {
+		t.Error("Error unmarshalling: ", err)
+		return
+	}
+
+	documents, err := memj.Query("TestCollection", queryPayload, NoLimit)
+
+	if err == nil {
+		t.Error("Incorrect types in comparison but no error")
+		return
+	}
+
+	if len(documents) != 0 {
+		t.Error("Incorrect number of documents returned")
+		return
+	}
+}
+
+func TestComparisonUnsupportedType(t *testing.T) {
+	memj, _ := New()
+
+	for i := 0; i < 100; i++ {
+		payloadText := fmt.Sprintf(`{"OrderID": "id-%d", "OrderPrice": %d}`, i, i)
+		var jsonTestPayload = []byte(payloadText)
+
+		var payload map[string]interface{}
+		err := json.Unmarshal(jsonTestPayload, &payload)
+
+		if err != nil {
+			t.Error("Error unmarshalling: ", err)
+			return
+		}
+
+		var objectID string
+		objectID, err = memj.Insert("TestCollection", payload)
+
+		if err != nil {
+			t.Error("Error inserting document: ", err)
+			return
+		}
+
+		if objectID == "" {
+			t.Error("Invalid objectID")
+			return
+		}
+	}
+
+	var jsonQuery = []byte(`{"OrderPrice": {"$gt": [23, 23]}}`)
+	var queryPayload map[string]interface{}
+	err := json.Unmarshal(jsonQuery, &queryPayload)
+
+	if err != nil {
+		t.Error("Error unmarshalling: ", err)
+		return
+	}
+
+	documents, err := memj.Query("TestCollection", queryPayload, NoLimit)
+
+	if err == nil {
+		t.Error("Incorrect types in comparison but no error")
+		return
+	}
+
+	if len(documents) != 0 {
+		t.Error("Incorrect number of documents returned")
+		return
+	}
+}
+
+func TestComparisonUnsupportedComplexType(t *testing.T) {
+	memj, _ := New()
+
+	for i := 0; i < 100; i++ {
+		payloadText := fmt.Sprintf(`{"OrderID": "id-%d", "OrderPrice": %d}`, i, i)
+		var jsonTestPayload = []byte(payloadText)
+
+		var payload map[string]interface{}
+		err := json.Unmarshal(jsonTestPayload, &payload)
+
+		if err != nil {
+			t.Error("Error unmarshalling: ", err)
+			return
+		}
+
+		var objectID string
+		objectID, err = memj.Insert("TestCollection", payload)
+
+		if err != nil {
+			t.Error("Error inserting document: ", err)
+			return
+		}
+
+		if objectID == "" {
+			t.Error("Invalid objectID")
+			return
+		}
+	}
+
+	var jsonQuery = []byte(`{"OrderPrice": {"$gt": {}}}`)
+	var queryPayload map[string]interface{}
+	err := json.Unmarshal(jsonQuery, &queryPayload)
+
+	if err != nil {
+		t.Error("Error unmarshalling: ", err)
+		return
+	}
+
+	documents, err := memj.Query("TestCollection", queryPayload, NoLimit)
+
+	if err == nil {
+		t.Error("Incorrect types in comparison but no error")
+		return
+	}
+
+	if len(documents) != 0 {
+		t.Error("Incorrect number of documents returned")
+		return
+	}
+}
