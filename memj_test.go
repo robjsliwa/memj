@@ -2989,3 +2989,106 @@ func TestComparisonUnsupportedComplexType(t *testing.T) {
 		return
 	}
 }
+
+func TestComparisonWithLogicalAnd(t *testing.T) {
+	memj, _ := New()
+
+	for i := 0; i < 100; i++ {
+		payloadText := fmt.Sprintf(`{"OrderID": "id-%d", "OrderPrice": %d}`, i, i)
+		var jsonTestPayload = []byte(payloadText)
+
+		var payload map[string]interface{}
+		err := json.Unmarshal(jsonTestPayload, &payload)
+
+		if err != nil {
+			t.Error("Error unmarshalling: ", err)
+			return
+		}
+
+		var objectID string
+		objectID, err = memj.Insert("TestCollection", payload)
+
+		if err != nil {
+			t.Error("Error inserting document: ", err)
+			return
+		}
+
+		if objectID == "" {
+			t.Error("Invalid objectID")
+			return
+		}
+	}
+
+	var jsonQuery = []byte(`{"$and": [{"OrderPrice": {"$gte": 50}}, {"OrderID": "id-57"}]}`)
+	var queryPayload map[string]interface{}
+	err := json.Unmarshal(jsonQuery, &queryPayload)
+
+	if err != nil {
+		t.Error("Error unmarshalling: ", err)
+		return
+	}
+
+	documents, err := memj.Query("TestCollection", queryPayload, NoLimit)
+
+	if err != nil {
+		t.Error("Error in Find: ", err)
+		return
+	}
+
+	if len(documents) != 1 {
+		t.Error("Incorrect number of documents returned")
+		return
+	}
+}
+
+func TestComparisonWithSelection(t *testing.T) {
+	memj, _ := New()
+
+	for i := 0; i < 100; i++ {
+		payloadText := fmt.Sprintf(`{"OrderID": "id-%d", "OrderPrice": %d}`, i, i)
+		var jsonTestPayload = []byte(payloadText)
+
+		var payload map[string]interface{}
+		err := json.Unmarshal(jsonTestPayload, &payload)
+
+		if err != nil {
+			t.Error("Error unmarshalling: ", err)
+			return
+		}
+
+		var objectID string
+		objectID, err = memj.Insert("TestCollection", payload)
+
+		if err != nil {
+			t.Error("Error inserting document: ", err)
+			return
+		}
+
+		if objectID == "" {
+			t.Error("Invalid objectID")
+			return
+		}
+	}
+
+	var jsonQuery = []byte(`{"OrderPrice": {"$gte": 50}, "OrderID": "id-57"}`)
+	var queryPayload map[string]interface{}
+	err := json.Unmarshal(jsonQuery, &queryPayload)
+
+	if err != nil {
+		t.Error("Error unmarshalling: ", err)
+		return
+	}
+
+	documents, err := memj.Query("TestCollection", queryPayload, NoLimit)
+
+	if err != nil {
+		t.Error("Error in Find: ", err)
+		return
+	}
+
+	fmt.Println(len(documents))
+	if len(documents) != 1 {
+		t.Error("Incorrect number of documents returned")
+		return
+	}
+}

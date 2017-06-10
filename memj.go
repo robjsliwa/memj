@@ -207,7 +207,7 @@ func (m *MemJ) performMatchQuery(query, document map[string]interface{}) (bool, 
 					if err != nil {
 						return false, err
 					}
-					break
+					continue
 				} else {
 					compareValue = document[k]
 				}
